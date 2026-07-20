@@ -69,15 +69,6 @@
      var currentImage = getProfilePictureAsBase64(username);
  
      try {
-+    try {
-+        String normalizedPath = f.getCanonicalPath();
-+        if (!normalizedPath.startsWith(tmpZipDirectory.toFile().getCanonicalPath())) {
-+            throw new IOException("Error: Attempt to copy file outside of the base directory.");
-+        }
-+    } catch (IOException e) {
-+        throw new IOException("Error: Invalid file path.", e);
-+    }
-+
        var uploadedZipFile = tmpZipDirectory.resolve(file.getOriginalFilename());
        FileCopyUtils.copy(file.getBytes(), uploadedZipFile.toFile());
  
@@ -86,6 +77,12 @@
        while (entries.hasMoreElements()) {
          ZipEntry e = entries.nextElement();
          File f = new File(tmpZipDirectory.toFile(), e.getName());
++        String canonicalDestinationPath = f.getCanonicalPath();
++        String canonicalBasePath = tmpZipDirectory.toFile().getCanonicalPath();
++        if (!canonicalDestinationPath.startsWith(canonicalBasePath)) {
++          throw new IOException("Entry is outside of the target dir: " + e.getName());
++        }
++
          InputStream is = zip.getInputStream(e);
          Files.copy(is, f.toPath(), StandardCopyOption.REPLACE_EXISTING);
        }
