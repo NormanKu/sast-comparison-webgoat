@@ -4,6 +4,7 @@
   */
  package org.owasp.webgoat.webwolf;
  
++import java.nio.file.Paths;
  import static java.util.Comparator.comparing;
  import static org.springframework.http.MediaType.ALL_VALUE;
  
@@ -64,15 +65,6 @@
  
    @PostMapping(value = "/fileupload")
    public ModelAndView importFile(
-+    try {
-+        String normalizedPath = destinationFile.toRealPath().toString();
-+        if (!normalizedPath.startsWith(destinationDir.toPath().toRealPath().toString())) {
-+            throw new IOException("Attempt to delete file outside of the base directory.");
-+        }
-+    } catch (IOException e) {
-+        throw new IOException("Error: could not delete file.", e);
-+    }
-+
        @RequestParam("file") MultipartFile multipartFile, Authentication authentication)
        throws IOException {
      var username = authentication.getName();
@@ -81,7 +73,12 @@
      // DO NOT use multipartFile.transferTo(), see
      // https://stackoverflow.com/questions/60336929/java-nio-file-nosuchfileexception-when-file-transferto-is-called
      try (InputStream is = multipartFile.getInputStream()) {
-       var destinationFile = destinationDir.toPath().resolve(multipartFile.getOriginalFilename());
+-      var destinationFile = destinationDir.toPath().resolve(multipartFile.getOriginalFilename());
++      var destinationFile = destinationDir.toPath().resolve(multipartFile.getOriginalFilename()).normalize();
++      if (!destinationFile.startsWith(destinationDir.toPath().normalize())) {
++        throw new IOException("Invalid file path");
++      }
++
        Files.deleteIfExists(destinationFile);
        Files.copy(is, destinationFile);
      }
