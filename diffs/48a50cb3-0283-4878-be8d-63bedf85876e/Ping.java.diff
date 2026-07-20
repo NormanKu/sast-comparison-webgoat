@@ -22,11 +22,6 @@
    @Value("${webgoat.user.directory}")
    private String webGoatHomeDirectory;
  
-+    String normalizedPath = logFile.getCanonicalPath();
-+    if (!normalizedPath.startsWith(new File(webGoatHomeDirectory).getCanonicalPath())) {
-+        throw new IOException("Invalid file path");
-+    }
-+
    @GetMapping
    @ResponseBody
    public String logRequest(
@@ -37,6 +32,17 @@
      log.debug(logLine);
      File logFile = new File(webGoatHomeDirectory, "/XXE/log" + username + ".txt");
      try {
++      String normalizedPath = logFile.getCanonicalPath();
++      if (!normalizedPath.startsWith(new File(webGoatHomeDirectory).getCanonicalPath())) {
++        log.error("Error: Attempt to write file outside of the base directory.");
++        return "";
++      }
++    } catch (IOException e) {
++      log.error("Error occurred while normalizing the logfile path", e);
++      return "";
++    }
++
++    try {
        try (PrintWriter pw = new PrintWriter(logFile)) {
          pw.println(logLine);
        }
