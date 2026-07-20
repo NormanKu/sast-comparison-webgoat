@@ -96,15 +96,6 @@
            .body("Illegal characters are not allowed in the query params");
      }
      try {
-+    try {
-+        String normalizedPath = catPicture.getCanonicalPath();
-+        if (!normalizedPath.startsWith(new File(catPicturesDirectory).getCanonicalPath())) {
-+            return ResponseEntity.badRequest().body("Error: Attempt to access file outside of the base directory.");
-+        }
-+    } catch (IOException e) {
-+        return ResponseEntity.badRequest().body("Error: could not access file.");
-+    }
-+
        var id = request.getParameter("id");
        var catPicture =
            new File(catPicturesDirectory, (id == null ? RandomUtils.nextInt(1, 11) : id) + ".jpg");
@@ -114,6 +105,11 @@
              .contentType(MediaType.parseMediaType(MediaType.IMAGE_JPEG_VALUE))
              .body(FileCopyUtils.copyToByteArray(catPicture));
        }
++      String normalizedPath = catPicture.getCanonicalPath();
++      if (!normalizedPath.startsWith(new File(catPicturesDirectory).getCanonicalPath())) {
++        return ResponseEntity.badRequest().body("Error: Attempt to access file outside of the base directory.");
++      }
++
        if (catPicture.exists()) {
          return ResponseEntity.ok()
              .contentType(MediaType.parseMediaType(MediaType.IMAGE_JPEG_VALUE))
