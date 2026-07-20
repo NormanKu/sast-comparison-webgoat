@@ -92,16 +92,7 @@
          .feedbackArgs(uploadedFile.getCanonicalPath())
          .build();
    }
-+    try {
-+        String normalizedPath = profilePictureDirectory.getCanonicalPath();
-+        if (!normalizedPath.startsWith(new File(this.webGoatHomeDirectory).getCanonicalPath())) {
-+            return new byte[0]; // or handle the error appropriately
-+        }
-+    } catch (IOException e) {
-+        return new byte[0]; // or handle the error appropriately
-+    }
  
-+
    public ResponseEntity<?> getProfilePicture(@CurrentUsername String username) {
      return ResponseEntity.ok()
          .contentType(MediaType.parseMediaType(MediaType.IMAGE_JPEG_VALUE))
@@ -110,6 +101,15 @@
  
    protected byte[] getProfilePictureAsBase64(String username) {
      var profilePictureDirectory = new File(this.webGoatHomeDirectory, "/PathTraversal/" + username);
++    try {
++      String normalizedPath = profilePictureDirectory.getCanonicalPath();
++      if (!normalizedPath.startsWith(new File(this.webGoatHomeDirectory).getCanonicalPath())) {
++        return new byte[0];
++      }
++    } catch (IOException e) {
++      return new byte[0];
++    }
++
      var profileDirectoryFiles = profilePictureDirectory.listFiles();
  
      if (profileDirectoryFiles != null && profileDirectoryFiles.length > 0) {
