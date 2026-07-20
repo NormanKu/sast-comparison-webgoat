@@ -54,8 +54,7 @@
        return failed(this).feedback("xss-reflected-5a-failed-wrong-field").build();
      }
  
--    double totalSale =
-+cart.append("<p>We have charged credit card:" + StringEscapeUtils.escapeHtml4(field1) + "<br />");
+     double totalSale =
          QTY1.intValue() * 69.99
              + QTY2.intValue() * 27.99
              + QTY3.intValue() * 1599.99
@@ -63,6 +62,7 @@
  
      userSessionData.setValue("xss-reflected1-complete", "false");
      StringBuilder cart = new StringBuilder();
++    field1 = StringEscapeUtils.escapeHtml4(field1);
      cart.append("Thank you for shopping at WebGoat. <br />Your support is appreciated<hr />");
      cart.append("<p>We have charged credit card:" + field1 + "<br />");
      cart.append("                             ------------------- <br />");
