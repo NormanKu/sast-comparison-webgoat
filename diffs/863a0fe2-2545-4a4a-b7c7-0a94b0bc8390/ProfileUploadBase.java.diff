@@ -59,17 +59,7 @@
            .feedback("path-traversal-profile-updated")
            .feedbackArgs(uploadedFile.getAbsoluteFile())
            .build();
-+    try {
-+        String normalizedPath = uploadDirectory.getCanonicalPath();
-+        if (!normalizedPath.startsWith(new File(this.webGoatHomeDirectory, "/PathTraversal").getCanonicalPath())) {
-+            throw new IOException("Invalid directory path");
-+        }
-+    } catch (IOException e) {
-+        // Handle the exception or log it
-+        return null;
-+    }
  
-+
      } catch (IOException e) {
        return failed(this).output(e.getMessage()).build();
      }
@@ -78,6 +68,15 @@
    @SneakyThrows
    protected File cleanupAndCreateDirectoryForUser(String username) {
      var uploadDirectory = new File(this.webGoatHomeDirectory, "/PathTraversal/" + username);
++    try {
++      String normalizedPath = uploadDirectory.getCanonicalPath();
++      if (!normalizedPath.startsWith(new File(this.webGoatHomeDirectory).getCanonicalPath())) {
++        throw new IOException("Invalid directory path");
++      }
++    } catch (IOException e) {
++      throw new RuntimeException("Failed to validate directory path", e);
++    }
++
      if (uploadDirectory.exists()) {
        FileSystemUtils.deleteRecursively(uploadDirectory);
      }
