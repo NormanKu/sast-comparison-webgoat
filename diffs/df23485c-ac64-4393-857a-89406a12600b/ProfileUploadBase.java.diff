@@ -40,16 +40,7 @@
    protected AttackResult execute(MultipartFile file, String fullName, String username) {
      if (file.isEmpty()) {
        return failed(this).feedback("path-traversal-profile-empty-file").build();
-+    try {
-+        String normalizedPath = uploadedFile.getCanonicalPath();
-+        if (!normalizedPath.startsWith(new File(uploadDirectory).getCanonicalPath())) {
-+            return AttackResult.failed("Invalid file path");
-+        }
-+    } catch (IOException e) {
-+        return AttackResult.failed("Error validating file path");
      }
-+
-+    }
      if (StringUtils.isEmpty(fullName)) {
        return failed(this).feedback("path-traversal-profile-empty-name").build();
      }
@@ -58,6 +49,11 @@
  
      try {
        var uploadedFile = new File(uploadDirectory, fullName);
++      String normalizedPath = uploadedFile.getCanonicalPath();
++      if (!normalizedPath.startsWith(uploadDirectory.getCanonicalPath())) {
++        return failed(this).feedback("path-traversal-profile-invalid-path").build();
++      }
++
        uploadedFile.createNewFile();
        FileCopyUtils.copy(file.getBytes(), uploadedFile);
  
